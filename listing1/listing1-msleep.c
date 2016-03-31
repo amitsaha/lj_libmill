@@ -11,7 +11,6 @@ coroutine void f(int index)
 
 int main(int argc, char **argv)
 {
-  gotrace(1);
   for(int i=1;i<=10; i++) {
     go(f(i));
   }
