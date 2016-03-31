@@ -1,6 +1,5 @@
 # include <stdio.h>
 # include <libmill.h>
-# include <string.h>
 
 coroutine void f(int index)
 {
