@@ -2,17 +2,15 @@
 # include <libmill.h>
 # include <string.h>
 
-coroutine void f(int index, const char *text)
+coroutine void f(int index)
 {
-  printf("Worker %d, Message %s\n", index, text);
+  printf("Worker %d\n", index);
 }
 
 int main(int argc, char **argv)
 {
-  char str[10];
   for(int i=1;i<=10; i++) {
-    sprintf(str, "Text %d", i);
-    go(f(i, str));
+    go(f(i));
   }
   return 0;
 }
