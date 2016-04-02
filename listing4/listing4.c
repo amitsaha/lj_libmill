@@ -1,36 +1,20 @@
-# include <libmill.h>
 # include <stdio.h>
+# include <libmill.h>
+# include <string.h>
 # include <stdlib.h>
-# include <errno.h>
-# include <unistd.h>
 
-/* Handler coroutine */
-coroutine void handler(tcpsock as) {
-  printf("New connection!\n");
-  tcpclose(as);
+coroutine void f(int index)
+{
+  msleep(now() + rand() % 50 );
+  printf("Worker %d\n", index);  
 }
 
 int main(int argc, char **argv)
 {
-  int port = 9090;
-  ipaddr addr = iplocal(NULL, port, 0);
-  tcpsock server = tcplisten(addr, 10);
-
-  if (!server) {
-    perror("Can't setup a listening server\n");
-    return 1;
-  } else {
-    printf("Server listening on %d\n", port);
+  gotrace(1);
+  for(int i=1;i<=10; i++) {
+    go(f(i));
   }
-
-  /* Server loop*/
-  while(1) {
-    tcpsock as = tcpaccept(server, -1);
-    if (!as)
-      continue;
-    /* Dispatch this request */
-    go(handler(as));
-  }
-
+  msleep(now() + 60);
   return 0;
 }
