@@ -1,3 +1,8 @@
+/*
+Example where we have a generator() coroutine continuously generate
+work and a worker() coroutine process the work
+*/
+
 #define MAX_MSG_SIZE 100
 
 # include <stdio.h>
