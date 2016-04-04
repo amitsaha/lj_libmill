@@ -44,5 +44,10 @@ int main(int argc, char **argv) {
     end
     }
   }
+  // Close all channels
+  chclose(work);
+  chclose(result);
+  chclose(error);
   return 0;
 }
+

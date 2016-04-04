@@ -1,37 +1,50 @@
 # include <libmill.h>
 # include <stdio.h>
 # include <stdlib.h>
-# include <errno.h>
-# include <unistd.h>
+# include <time.h>
 
-/* Handler coroutine */
-coroutine void handler(tcpsock as) {
-  printf("New connection!\n");
-  tcpclose(as);
+struct data {
+  char *url;
+  char *data;
+};
+
+coroutine void f(chan work, chan result, chan error) {
+  struct data d;
+  char *url = chr(work, char*);
+  d.url = url;
+  /* Simulate 70% success and 30% failure scenario*/
+  double r = (double) rand()/RAND_MAX;
+  if (r < 0.71) {
+    // Successful scenario
+    d.data = "Data at the URL";
+    chs(result, struct data, d);
+  } else {
+    // Unsuccessful scenario
+    d.data = "Error retreiving data";
+    chs(error, struct data, d);
+  }
 }
 
-int main(int argc, char **argv)
-{
-  
-  int port = 9090;
-  ipaddr addr = iplocal(NULL, port, 0);
-  tcpsock server = tcplisten(addr, 10);
+int main(int argc, char **argv) {
+  chan work = chmake(char*, 0);
+  chan result = chmake(struct data, 0);
+  chan error = chmake(struct data, 0);
 
-  if (!server) {
-    perror("Can't setup a listening server\n");
-    return 1;
-  } else {
-    printf("Server listening on %d\n", port);
+  for(int i=1; i<argc; i++) {
+    go(f(work, result, error));
   }
 
-  /* Server loop*/
-  while(1) {
-    tcpsock as = tcpaccept(server, -1);
-    if (!as)
-      continue;
-    /* Dispatch this request */
-    go(handler(as));
+  for(int i=1; i<argc; i++) {
+    choose {
+    in(result, struct data, value):
+      printf("Processed URL: %s, Result: %s\n", value.url, value.data);
+    in(error, struct data, value):
+      printf("Processed URL: %s, Error: %s\n", value.url, value.data);
+    end
+    }
   }
-
+  chclose(work);
+  chclose(result);
+  chclose(error);
   return 0;
 }
